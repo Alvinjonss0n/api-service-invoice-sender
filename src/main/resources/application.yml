@@ -36,7 +36,7 @@ resilience4j.circuitbreaker:
 
 scheduler:
   move-files:
-    name: writeAndArchiveBatch
+    name: writeAndArchiveBatchScheduler
     # Every 5 minutes between 03:00-08:00 Monday-Friday
     cron: '* */5 3-8 ? * MON-FRI'
   shedlock-lock-at-most-for: PT2M

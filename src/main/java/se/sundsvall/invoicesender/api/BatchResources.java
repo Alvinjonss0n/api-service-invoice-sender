@@ -68,6 +68,11 @@ class BatchResources {
 		return ok().build();
 	}
 
+	@PostMapping(value = "/trigger/stuckBatch")
+	ResponseEntity<Void> triggerStuckBatchByStatus(
+			@Parameter(name = "batchStatus")
+	)
+
 	@Operation(
 		summary = "Returns all batches matching the given filters",
 		responses = {

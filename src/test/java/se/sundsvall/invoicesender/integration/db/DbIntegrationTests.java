@@ -1,19 +1,5 @@
 package se.sundsvall.invoicesender.integration.db;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static se.sundsvall.invoicesender.TestDataFactory.createBatchEntity;
-import static se.sundsvall.invoicesender.TestDataFactory.createItemEntity;
-import static se.sundsvall.invoicesender.integration.db.entity.BatchStatus.MANAGED;
-import static se.sundsvall.invoicesender.integration.db.entity.BatchStatus.READY;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,99 +10,109 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import se.sundsvall.invoicesender.integration.db.entity.BatchEntity;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static se.sundsvall.invoicesender.TestDataFactory.createBatchEntity;
+import static se.sundsvall.invoicesender.TestDataFactory.createItemEntity;
+import static se.sundsvall.invoicesender.integration.db.entity.BatchStatus.HANDLED;
+import static se.sundsvall.invoicesender.integration.db.entity.BatchStatus.READY;
+
 @ExtendWith(MockitoExtension.class)
 class DbIntegrationTests {
 
-	@Mock
-	private BatchRepository batchRepositoryMock;
+    @Mock
+    private BatchRepository batchRepositoryMock;
 
-	@Mock
-	private ItemRepository itemRepositoryMock;
+    @Mock
+    private ItemRepository itemRepositoryMock;
 
-	@InjectMocks
-	private DbIntegration dbIntegration;
+    @InjectMocks
+    private DbIntegration dbIntegration;
 
-	@Test
-	void testGetBatches() {
-		final var batchEntities = List.of(new BatchEntity(), new BatchEntity(), new BatchEntity());
-		when(batchRepositoryMock.findAllByCompletedAtBetweenAndMunicipalityId(
-			any(LocalDateTime.class), any(LocalDateTime.class), any(String.class), any(Pageable.class)))
-			.thenReturn(new PageImpl<>(batchEntities));
+    @Test
+    void testGetBatches() {
+        final var batchEntities = List.of(new BatchEntity(), new BatchEntity(), new BatchEntity());
+        when(batchRepositoryMock.findAllByCompletedAtBetweenAndMunicipalityId(
+                any(LocalDateTime.class), any(LocalDateTime.class), any(String.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(batchEntities));
 
-		final var result = dbIntegration.getBatches(LocalDate.now(), LocalDate.now(), PageRequest.of(0, 2), "2281");
+        final var result = dbIntegration.getBatches(LocalDate.now(), LocalDate.now(), PageRequest.of(0, 2), "2281");
 
-		assertThat(result).isNotNull();
-		assertThat(result.getTotalElements()).isEqualTo(3L);
-		assertThat(result.getSize()).isEqualTo(2);
-		assertThat(result.getNumber()).isZero();
-		assertThat(result.getTotalPages()).isEqualTo(2);
+        assertThat(result).isNotNull();
+        assertThat(result.getTotalElements()).isEqualTo(3L);
+        assertThat(result.getSize()).isEqualTo(2);
+        assertThat(result.getNumber()).isZero();
+        assertThat(result.getTotalPages()).isEqualTo(2);
 
-		verify(batchRepositoryMock).findAllByCompletedAtBetweenAndMunicipalityId(
-			any(LocalDateTime.class), any(LocalDateTime.class), any(String.class), any(Pageable.class));
-		verifyNoMoreInteractions(batchRepositoryMock);
-	}
+        verify(batchRepositoryMock).findAllByCompletedAtBetweenAndMunicipalityId(
+                any(LocalDateTime.class), any(LocalDateTime.class), any(String.class), any(Pageable.class));
+        verifyNoMoreInteractions(batchRepositoryMock);
+    }
 
-	@Test
-	void testGetBatchesByStatusReady() {
-		var ready = READY;
+    @Test
+    void testGetBatchesByStatusReady() {
+        var batchEntity = createBatchEntity();
+        var batchEntity2 = createBatchEntity();
+        var expectedBatch = List.of(batchEntity, batchEntity2);
 
-		var batchEntity = createBatchEntity();
-		var batchEntity2 = createBatchEntity();
-		var expectedBatch = List.of(batchEntity, batchEntity2);
+        when(batchRepositoryMock.findAllByBatchStatus(READY)).thenReturn(expectedBatch);
 
-		when(batchRepositoryMock.findAllByBatchStatus(ready)).thenReturn(expectedBatch);
+        var actualBatch = dbIntegration.getBatchesByStatus(READY);
 
-		var actualBatch = dbIntegration.getBatchesByStatus(ready);
+        assertThat(expectedBatch).isEqualTo(actualBatch);
+    }
 
-		assertThat(expectedBatch).isEqualTo(actualBatch).hasSize(2);
-	}
+    @Test
+    void testGetBatchesByStatusManaged() {
+        var batchEntity = createBatchEntity();
+        var batchEntity2 = createBatchEntity();
+        var expectedBatch = List.of(batchEntity, batchEntity2);
 
-	@Test
-	void testGetBatchesByStatusManaged() {
-		var managed = MANAGED;
+        when(batchRepositoryMock.findAllByBatchStatus(HANDLED)).thenReturn(expectedBatch);
 
-		var batchEntity = createBatchEntity();
-		var batchEntity2 = createBatchEntity();
-		var expectedBatch = List.of(batchEntity, batchEntity2);
+        var actualBatch = dbIntegration.getBatchesByStatus(HANDLED);
 
-		when(batchRepositoryMock.findAllByBatchStatus(managed)).thenReturn(expectedBatch);
+        assertThat(expectedBatch).isEqualTo(actualBatch);
+    }
 
-		var actualBatch = dbIntegration.getBatchesByStatus(managed);
+    @Test
+    void persistItem() {
+        var itemEntity = createItemEntity();
 
-		assertThat(expectedBatch).isEqualTo(actualBatch).hasSize(2);
-	}
+        dbIntegration.persistItem(itemEntity);
 
-	@Test
-	void persistItem() {
-		var itemEntity = createItemEntity();
+        verify(itemRepositoryMock).save(itemEntity);
+        verifyNoMoreInteractions(itemRepositoryMock);
+        verifyNoInteractions(batchRepositoryMock);
+    }
 
-		dbIntegration.persistItem(itemEntity);
+    @Test
+    void persistBatch() {
+        var batchEntity = createBatchEntity();
 
-		verify(itemRepositoryMock).save(itemEntity);
-		verifyNoMoreInteractions(itemRepositoryMock);
-		verifyNoInteractions(batchRepositoryMock);
-	}
+        dbIntegration.persistBatch(batchEntity);
 
-	@Test
-	void persistBatch() {
-		var batchEntity = createBatchEntity();
+        verify(batchRepositoryMock).save(batchEntity);
+        verifyNoMoreInteractions(batchRepositoryMock);
+        verifyNoInteractions(itemRepositoryMock);
+    }
 
-		dbIntegration.persistBatch(batchEntity);
+    @Test
+    void persistsBatches() {
+        var batchEntities = List.of(createBatchEntity(), createBatchEntity());
 
-		verify(batchRepositoryMock).save(batchEntity);
-		verifyNoMoreInteractions(batchRepositoryMock);
-		verifyNoInteractions(itemRepositoryMock);
-	}
+        dbIntegration.persistBatches(batchEntities);
 
-	@Test
-	void persistsBatches() {
-		var batchEntities = List.of(createBatchEntity(), createBatchEntity());
-
-		dbIntegration.persistBatches(batchEntities);
-
-		verify(batchRepositoryMock).saveAll(batchEntities);
-		verifyNoMoreInteractions(batchRepositoryMock);
-		verifyNoInteractions(itemRepositoryMock);
-	}
-
+        verify(batchRepositoryMock).saveAll(batchEntities);
+        verifyNoMoreInteractions(batchRepositoryMock);
+        verifyNoInteractions(itemRepositoryMock);
+    }
 }
