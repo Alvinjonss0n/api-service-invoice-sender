@@ -90,7 +90,7 @@ class InvoiceSenderIT extends AbstractAppTest {
      * Tests the scenario where no invoices are sent.
      */
     @Test
-    void test1_processInvoices22() throws IOException {
+    void test1_processInvoices() throws IOException {
         var inputFile = "Faktura-pdf-200101_000001.zip.7z";
         setupCall()
                 .withServicePath(SERVICE_PATH + "/new/move")
@@ -121,7 +121,7 @@ class InvoiceSenderIT extends AbstractAppTest {
     }
 
     @Test
-    void test1_processInvoices() {
+    void test1_trigger_date() {
         setupCall()
                 .withServicePath(SERVICE_PATH + "/2020-01-01")
                 .withHttpMethod(POST)
@@ -133,7 +133,7 @@ class InvoiceSenderIT extends AbstractAppTest {
      * Tests the scenario where some invoices are sent and some are not.
      */
     @Test
-    void fråntest2() throws IOException {
+    void test2_processInvoices2() throws IOException {
         var inputFile = "Faktura-pdf-200102_000002.zip.7z";
         setupCall()
                 .withServicePath(SERVICE_PATH + "/new/move")
@@ -164,7 +164,7 @@ class InvoiceSenderIT extends AbstractAppTest {
     }
 
     @Test
-    void test2_processInvoices() {
+    void test2_trigger_date() {
         setupCall()
                 .withServicePath(SERVICE_PATH + "/2020-01-02")
                 .withHttpMethod(POST)
@@ -176,7 +176,7 @@ class InvoiceSenderIT extends AbstractAppTest {
      * Tests the scenario where all invoices are sent.
      */
     @Test
-    void fråntest3() throws IOException {
+    void test3_processInvoices1() throws IOException {
 
         var inputFile = "Faktura-pdf-200103_000003.zip.7z";
         setupCall()
@@ -208,7 +208,7 @@ class InvoiceSenderIT extends AbstractAppTest {
     }
 
     @Test
-    void test3_processInvoices() {
+    void test3_trigger_date() {
         setupCall()
                 .withServicePath(SERVICE_PATH + "/2020-01-03")
                 .withHttpMethod(POST)
