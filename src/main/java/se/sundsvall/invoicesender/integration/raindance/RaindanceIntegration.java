@@ -251,7 +251,8 @@ public class RaindanceIntegration {
                 .toList();
 
         // Create the ZIP file
-        var batchZipFilePath = batchPath.resolve(batch.getBasename().concat(".zip"));
+        var batchZipFilePath = batchPath.resolve(batch.getBasename().concat(".zip.7z"));
+        System.out.println("TEST : " + batchZipFilePath);
         LOG.info("Creating ZIP file '{}'", batchZipFilePath.getFileName());
         try (var zipOutputStream = new ZipArchiveOutputStream(batchZipFilePath, WRITE, TRUNCATE_EXISTING)) {
             zipOutputStream.setLevel(Deflater.BEST_COMPRESSION);

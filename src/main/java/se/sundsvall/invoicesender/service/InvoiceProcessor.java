@@ -226,7 +226,8 @@ public class InvoiceProcessor {
         messagingIntegration.sendStatusReport(batchEntities, date, municipalityId);
     }
 
-    public void writeAndArchiveBatch(BatchStatus batchStatus) throws IOException {
+    public void writeAndArchiveBatch(String status) throws IOException {
+        var batchStatus = BatchStatus.valueOf(status.toUpperCase());
         var batches = dbIntegration.getBatchesByStatus(batchStatus);
 
         if (batches == null || batches.isEmpty()) {

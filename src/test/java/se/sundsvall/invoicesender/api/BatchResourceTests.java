@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -64,7 +65,7 @@ class BatchResourceTests {
 	}
 
 	@Test
-	void triggerBatch() throws Exception {
+	void triggerBatch() {
 		final var date = LocalDate.of(2019, 2, 28);
 
 		webTestClient.post()
@@ -73,6 +74,35 @@ class BatchResourceTests {
 			.expectStatus().isOk();
 
 		verify(mockInvoiceProcessor, times(1)).run(eq(date), any(String.class));
+		verifyNoMoreInteractions(mockInvoiceProcessor);
+		verifyNoInteractions(mockDbIntegration);
+	}
+
+	@Test
+	void moveBatchWithInvalidStatus() {
+		final var response = webTestClient.post()
+			.uri(PATH + "/{status}/move", "2281", "not a status")
+			.exchange()
+			.expectStatus().isBadRequest()
+			.expectBody(ConstraintViolationProblem.class)
+			.returnResult()
+			.getResponseBody();
+
+		assertThat(response).isNotNull();
+		assertThat(response.getViolations()).hasSize(1);
+		assertThat(response.getViolations().getFirst().getMessage()).isEqualTo("status must be one of: [NEW, READY, HANDLED]");
+
+		verifyNoInteractions(mockDbIntegration);
+	}
+
+	@Test
+	void moveBatch() throws IOException {
+		webTestClient.post()
+			.uri(PATH + "/{status}/move", "2281", "new")
+			.exchange()
+			.expectStatus().isOk();
+
+		verify(mockInvoiceProcessor, times(1)).writeAndArchiveBatch("new");
 		verifyNoMoreInteractions(mockInvoiceProcessor);
 		verifyNoInteractions(mockDbIntegration);
 	}

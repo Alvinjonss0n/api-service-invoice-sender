@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -163,6 +164,7 @@ class MessagingIntegrationTests {
 	@Test
 	void testSendSlackMessage() {
 		var batch = new BatchEntity();
+		batch.setProcessingEnabled(true);
 		var date = LocalDate.now();
 		var slackRequest = new SlackRequest()
 			.channel("Test-Channel")
@@ -181,6 +183,7 @@ class MessagingIntegrationTests {
 	@Test
 	void testSendSlackMessageWhenExceptionIsThrown() {
 		var batch = new BatchEntity();
+		batch.setProcessingEnabled(true);
 		var date = LocalDate.now();
 		var slackRequest = new SlackRequest();
 
@@ -193,6 +196,17 @@ class MessagingIntegrationTests {
 		verify(messagingMapper).toSlackRequest(anyString());
 		verify(mockClient).sendSlackMessage(MUNICIPALITY_ID, slackRequest);
 		verifyNoMoreInteractions(mockClient, messagingMapper);
+	}
+
+	@Test
+	void testSendSlackMessageWhenProcessingIsFalse() {
+		var batch = new BatchEntity();
+		batch.setProcessingEnabled(false);
+		var date = LocalDate.now();
+
+		messagingIntegration.sendSlackMessage(batch, date, MUNICIPALITY_ID);
+
+		verifyNoInteractions(mockClient, messagingMapper);
 	}
 
 	@Test

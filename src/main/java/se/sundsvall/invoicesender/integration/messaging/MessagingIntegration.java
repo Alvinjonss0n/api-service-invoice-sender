@@ -81,6 +81,9 @@ public class MessagingIntegration {
 	}
 
 	public void sendSlackMessage(final BatchEntity batch, final LocalDate date, final String municipalityId) {
+		if (!batch.isProcessingEnabled()) {
+			return;
+		}
 		LOG.info("Sending slack message");
 		var request = messagingMapper.toSlackRequest(generateSlackMessage(batch, date));
 

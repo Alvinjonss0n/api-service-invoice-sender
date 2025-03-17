@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -33,6 +34,10 @@ import static se.sundsvall.invoicesender.util.Constants.X_PATH_FILENAME_EXPRESSI
 
 @Testcontainers
 @WireMockAppTestSuite(files = "classpath:/InvoiceSenderIT/", classes = Application.class)
+@Sql(scripts = {
+        "/db/scripts/invoice_sender_it_truncate.sql",
+        "/db/scripts/invoice_sender_it_testdata.sql"
+})
 class InvoiceSenderIT extends AbstractAppTest {
 
     private static final String SERVICE_PATH = "/2281/batches/trigger";
@@ -85,11 +90,10 @@ class InvoiceSenderIT extends AbstractAppTest {
      * Tests the scenario where no invoices are sent.
      */
     @Test
-    void test1_processInvoices() throws IOException {
+    void test1_processInvoices22() throws IOException {
         var inputFile = "Faktura-pdf-200101_000001.zip.7z";
-
         setupCall()
-                .withServicePath(SERVICE_PATH + "/2020-01-01")
+                .withServicePath(SERVICE_PATH + "/new/move")
                 .withHttpMethod(POST)
                 .withExpectedResponseStatus(OK)
                 .sendRequestAndVerifyResponse();
@@ -116,15 +120,23 @@ class InvoiceSenderIT extends AbstractAppTest {
         }
     }
 
+    @Test
+    void test1_processInvoices() {
+        setupCall()
+                .withServicePath(SERVICE_PATH + "/2020-01-01")
+                .withHttpMethod(POST)
+                .withExpectedResponseStatus(OK)
+                .sendRequestAndVerifyResponse();
+    }
+
     /**
      * Tests the scenario where some invoices are sent and some are not.
      */
     @Test
-    void test2_processInvoices() throws IOException {
+    void fråntest2() throws IOException {
         var inputFile = "Faktura-pdf-200102_000002.zip.7z";
-
         setupCall()
-                .withServicePath(SERVICE_PATH + "/2020-01-02")
+                .withServicePath(SERVICE_PATH + "/new/move")
                 .withHttpMethod(POST)
                 .withExpectedResponseStatus(OK)
                 .sendRequestAndVerifyResponse();
@@ -151,15 +163,24 @@ class InvoiceSenderIT extends AbstractAppTest {
         }
     }
 
+    @Test
+    void test2_processInvoices() {
+        setupCall()
+                .withServicePath(SERVICE_PATH + "/2020-01-02")
+                .withHttpMethod(POST)
+                .withExpectedResponseStatus(OK)
+                .sendRequestAndVerifyResponse();
+    }
+
     /**
      * Tests the scenario where all invoices are sent.
      */
     @Test
-    void test3_processInvoices() throws IOException {
-        var inputFile = "Faktura-pdf-200103_000003.zip.7z";
+    void fråntest3() throws IOException {
 
+        var inputFile = "Faktura-pdf-200103_000003.zip.7z";
         setupCall()
-                .withServicePath(SERVICE_PATH + "/2020-01-03")
+                .withServicePath(SERVICE_PATH + "/new/move")
                 .withHttpMethod(POST)
                 .withExpectedResponseStatus(OK)
                 .sendRequestAndVerifyResponse();
@@ -183,6 +204,16 @@ class InvoiceSenderIT extends AbstractAppTest {
             var originalFile = new File(TESTDATA_DIR + File.separator + inputFile);
             assertThat(extractZipFile(archiveFile)).usingRecursiveComparison().isEqualTo(extractZipFile(originalFile));
         }
+
+    }
+
+    @Test
+    void test3_processInvoices() {
+        setupCall()
+                .withServicePath(SERVICE_PATH + "/2020-01-03")
+                .withHttpMethod(POST)
+                .withExpectedResponseStatus(OK)
+                .sendRequestAndVerifyResponse();
     }
 
     private void assertArchiveIndex(final List<Invoice> invoices, final SmbFile outFile) throws IOException {

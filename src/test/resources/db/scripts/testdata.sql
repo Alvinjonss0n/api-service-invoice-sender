@@ -6,9 +6,9 @@ VALUES (1, 'batch1', '2024-01-01 00:00:00.00', '2024-01-01 00:01:00.00', 7, 1, 5
        (2, 'batch2', '2024-01-01 00:00:00.00', '2024-01-01 00:01:00.00', 7, 1, 5, 2281, 'targetpath', 'localpath',
         'archivepath', 1, 0, NULL, '2024-01-01', 'READY'),
        (3, 'batch3', '2024-01-01 00:00:00.00', '2024-01-01 00:01:00.00', 7, 1, 5, 2281, 'targetpath', 'localpath',
-        'archivepath', 1, 0, NULL, '2024-01-01', 'MANAGED'),
+        'archivepath', 1, 0, NULL, '2024-01-01', 'NEW'),
        (4, 'batch4', '2024-01-01 00:00:00.00', '2024-01-01 00:01:00.00', 7, 1, 5, 2281, 'targetpath', 'localpath',
-        'archivepath', 1, 0, NULL, '2024-01-01', 'MANAGED');
+        'archivepath', 1, 0, NULL, '2024-01-01', 'HANDLED');
 
 
 
